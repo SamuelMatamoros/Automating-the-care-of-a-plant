@@ -44,19 +44,4 @@ void loop() {
   // Serial.print(event.relative_humidity);
   // Serial.println(F("%"));
 
-  float duration = sonar.ping_median(5);
-
-  // float distance = sonar.ping_cm();
-  float distance = (duration / 2) * 0.0343;
-
-  Serial.print("Distance = ");
-  if (distance >= 400 || distance <= 2) {
-    Serial.println("Out of range");
-  }
-  else {
-    Serial.print(distance);
-    Serial.println(" cm");
-    delay(500);
-  }
-  delay(500);
 }
