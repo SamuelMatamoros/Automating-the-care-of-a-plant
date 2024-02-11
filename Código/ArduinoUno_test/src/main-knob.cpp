@@ -17,37 +17,21 @@ void setup() {
   Serial.begin(9600);
   pinMode(inputCLK, INPUT);
   pinMode(inputDT, INPUT);
-  // pinMode(button, INPUT);
+  pinMode(button, INPUT);
   pinMode(ledCW, OUTPUT);
   pinMode(ledCCW, OUTPUT);
 
   previousStateCLK = digitalRead(inputCLK);
-  Serial.println("------------KNOB TEST------------");
-  Serial.print("CLK: ");
-  Serial.print(digitalRead(inputCLK));
-  Serial.print("    DT: ");
-  Serial.print(digitalRead(inputDT));
-  Serial.print("    Current: ");
-  Serial.print(currentStateCLK);
-  Serial.print("    Previous: ");
-  Serial.println(previousStateCLK);
 
 }
 
 void loop() {
 
   currentStateCLK = digitalRead(inputCLK);
+  int buttonState = digitalRead(button);
   
 
   if (currentStateCLK != previousStateCLK) {
-    Serial.print("CLK: ");
-    Serial.print(digitalRead(inputCLK));
-    Serial.print("    DT: ");
-    Serial.print(digitalRead(inputDT));
-    Serial.print("    Current: ");
-    Serial.print(currentStateCLK);
-    Serial.print("    Previous: ");
-    Serial.println(previousStateCLK);
 
     if (digitalRead(inputDT) == currentStateCLK) {
       counter --;
@@ -59,8 +43,6 @@ void loop() {
       digitalWrite(ledCW, HIGH);
       digitalWrite(ledCCW, LOW);
     }
-    // Serial.print("Button: ");
-    // Serial.print(button);
     Serial.print("CLK: ");
     Serial.print(digitalRead(inputCLK));
     Serial.print("    DT: ");
@@ -70,5 +52,14 @@ void loop() {
   }
 
   previousStateCLK = currentStateCLK;
+
+  while (buttonState != 1) {
+    buttonState = digitalRead(button);
+
+    if (buttonState == 1) {
+      Serial.println("Button pressed!!");
+      delay(100);
+    }
+  }
 
 }

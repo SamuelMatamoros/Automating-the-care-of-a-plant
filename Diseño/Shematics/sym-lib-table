@@ -1,0 +1,4 @@
+(sym_lib_table
+  (version 7)
+  (lib (name "Automating_the_care_of_a_plant")(type "KiCad")(uri "${KIPRJMOD}/Automating_the_care_of_a_plant.kicad_sym")(options "")(descr ""))
+)
