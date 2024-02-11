@@ -40,14 +40,14 @@ void loop() {
   
 
   if (currentStateCLK != previousStateCLK) {
-    Serial.print("CLK: ");
-    Serial.print(digitalRead(inputCLK));
-    Serial.print("    DT: ");
-    Serial.print(digitalRead(inputDT));
-    Serial.print("    Current: ");
-    Serial.print(currentStateCLK);
-    Serial.print("    Previous: ");
-    Serial.println(previousStateCLK);
+    // Serial.print("CLK: ");
+    // Serial.print(digitalRead(inputCLK));
+    // Serial.print("    DT: ");
+    // Serial.print(digitalRead(inputDT));
+    // Serial.print("    Current: ");
+    // Serial.print(currentStateCLK);
+    // Serial.print("    Previous: ");
+    // Serial.println(previousStateCLK);
 
     if (digitalRead(inputDT) == currentStateCLK) {
       counter --;
