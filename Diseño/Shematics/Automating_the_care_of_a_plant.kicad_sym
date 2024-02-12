@@ -12,13 +12,11 @@
     (property "Datasheet" "" (at -1.27 -1.27 0)
       (effects (font (size 1.27 1.27)) hide)
     )
-    (symbol "SSR_0_1"
+    (symbol "SSR_1_1"
       (rectangle (start -5.08 5.08) (end 5.08 -5.08)
         (stroke (width 0) (type default))
-        (fill (type none))
+        (fill (type color) (color 255 255 194 1))
       )
-    )
-    (symbol "SSR_1_1"
       (text "SSR" (at 0 0 0)
         (effects (font (size 1.27 1.27)))
       )
