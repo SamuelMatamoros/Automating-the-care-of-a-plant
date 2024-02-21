@@ -3,16 +3,16 @@
 #include <DHT.h>
 #include <DHT_U.h>
 
-#define DHTPIN 34;
-#define DHTTYPE DHT22;
+#define DHTPIN 32
+#define DHTTYPE DHT22
 
 DHT_Unified dht(DHTPIN, DHTTYPE);
 
-unit32_t delayMS
+uint32_t delayMS;
 
 void setup() {
 
-    Serial.begin(115200);
+    Serial.begin(9600);
 
     dht.begin();
     Serial.println(F("DHT22 test"));
@@ -39,7 +39,7 @@ void setup() {
     Serial.print  (F("Resolution:  ")); Serial.print(sensor.resolution); Serial.println(F("%"));
     Serial.println(F("------------------------------------"));
 
-    delayMS = 2000
+    delayMS = 2000;
 }
 
 void loop() {
