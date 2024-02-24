@@ -12,6 +12,11 @@ To do so we will use a microcontroller,the ESP32, alongside some sensors and oth
 
 ![Early render of a design prototipe](./Diseño/Early3Dmodel/Render1.png)
 
+<!-- <div style="display:flex;justify-content:center">
+    <img style="height:240px;" src="./Diseño/Early3Dmodel/Render1.png">
+    <img style="height:240px;" src="./Diseño/Early3Dmodel/Render3.png">
+</div> -->
+
 ## Work in progress
 
 Still this isn't a finished proyect. In fact, I plan to continue developing and improving it. 
