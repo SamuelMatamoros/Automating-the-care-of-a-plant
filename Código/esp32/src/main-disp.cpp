@@ -7,7 +7,14 @@ TFT_eSPI tft = TFT_eSPI();
 void setup() 
 {
   tft.init();
-  tft.invertDisplay(1);
+  //tft.invertDisplay(1);
+  tft.setRotation(1);
+  tft.fillScreen(TFT_BLACK);
+  tft.setTextColor(TFT_WHITE);
+  tft.setTextSize(3);
+  tft.setCursor(40, 110);
+  tft.println("HELLO WORLD!");
+  delay(3000);
 }
 
 void loop() 
