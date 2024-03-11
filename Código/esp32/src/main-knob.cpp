@@ -2,7 +2,7 @@
 
 #define DTPin 21
 #define CLKPin 19
-#define button 23
+#define button 22
 
 int OldStateCLK;
 int NewStateCLK;
@@ -33,7 +33,7 @@ void loop() {
         // Serial.print("  DT:");
         // Serial.print(digitalRead(DTPin));
 
-        if (digitalRead(DTPin) != NewStateCLK) {
+        if (digitalRead(DTPin) == NewStateCLK) {
             counter ++;
         }
         else {
@@ -46,4 +46,5 @@ void loop() {
 
     OldStateCLK = NewStateCLK;
 
+    //Solucionar problema boton
 }
