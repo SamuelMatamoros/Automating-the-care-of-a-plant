@@ -18,7 +18,7 @@ void setup()
   ledcAttachPin(pwmPin, pwmChannel);
 
   tft.init();
-  tft.setRotation(1);
+  tft.setRotation(3);
   tft.fillScreen(TFT_BLACK);
   tft.setTextColor(TFT_WHITE);
   tft.setTextSize(6);
