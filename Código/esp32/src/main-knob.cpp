@@ -8,6 +8,11 @@ int OldStateCLK;
 int NewStateCLK;
 int counter = 0;
 
+int current_icon;
+int previous_icon;
+int next_icon;
+int iconsArray_LEN = 5;
+
 void setup() {
 
     Serial.begin(9600);
@@ -40,11 +45,28 @@ void loop() {
             counter --;
         }
 
- 		if (counter < 0) {counter = 0;}
-		if (counter > 5) {counter = 5;}
+ 		if (counter < 0) {counter = iconsArray_LEN - 1;}
+		if (counter > 4) {counter = 0;}
        
-        Serial.print("  Counter:");
-        Serial.println(counter);
+        current_icon = counter;
+
+        previous_icon = current_icon - 1;
+        if (previous_icon < 0) {
+	    previous_icon = iconsArray_LEN - 1;
+        }
+
+	    next_icon = current_icon + 1;
+	    if (next_icon >= iconsArray_LEN) {
+    	next_icon = 0;
+	    }
+
+        Serial.print("Previous: ");
+        Serial.print(previous_icon);
+        Serial.print("  Current:    ");
+        Serial.print(current_icon);
+        Serial.print("  Next:   ");
+        Serial.println(next_icon);
+
     }
 
     OldStateCLK = NewStateCLK;

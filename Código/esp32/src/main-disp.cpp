@@ -2,34 +2,6 @@
 #include <SPI.h>
 #include <TFT_eSPI.h>
 
-//PWM variables
-int pwmPin = 2;
-int pwmChannel = 0;
-int pwmRes = 8;
-int pwdFrequency = 1000;
-int dt = 5;
-
-//Screen selection variables
-//Is selection box drawn?
-int isDrawn = 0;
-//Selected
-int current_icon = 0;
-//Previous
-int previous_icon;
-//Next
-int next_icon;
-
-//Rotary encoder inclusion variables
-#define DTPin 21
-#define CLKPin 19
-#define button 22
-
-int OldStateCLK;
-int NewStateCLK;
-int counter = 0;
-
-
-
 TFT_eSPI tft = TFT_eSPI();
 
 const unsigned char icons_Select [] PROGMEM = {
@@ -1261,6 +1233,31 @@ const unsigned char* iconsArray[5] = {
 	icons_Rigeo
 };
 
+//PWM variables
+int pwmPin = 2;
+int pwmChannel = 0;
+int pwmRes = 8;
+int pwdFrequency = 1000;
+int dt = 5;
+
+//Screen selection variables
+//Selected
+int current_icon = 0;
+//Previous
+int previous_icon = iconsArray_LEN - 1;
+//Next
+int next_icon = current_icon + 1;
+
+//Rotary encoder inclusion variables
+#define DTPin 21
+#define CLKPin 19
+#define button 22
+
+int OldStateCLK;
+int NewStateCLK;
+int counter = 0;
+
+
 //////////////////////////////
 //Startup animation function//
 //////////////////////////////
@@ -1281,10 +1278,30 @@ void startupAnimation(){
 	delay(100);
 	}
 
-	delay(3000);
+	delay(1000);
 	tft.fillScreen(TFT_BLACK);
 
 	ledcWrite(pwmChannel, 255);
+}
+
+void drawSelectionMenu() {
+
+	//////////////////////////////
+	//Drawing the selection menu//
+	//////////////////////////////
+
+	//Previous icon
+	tft.drawBitmap(0,0,iconsArray[previous_icon],320,80,TFT_WHITE, TFT_BLACK);
+
+	//Current icon
+	tft.drawBitmap(0,80,iconsArray[current_icon],320,80,TFT_WHITE, TFT_BLACK);
+
+	//Next icon
+	tft.drawBitmap(0,160,iconsArray[next_icon],320,80,TFT_WHITE, TFT_BLACK);
+
+	//Selection square
+	tft.drawBitmap(0,80,icons_Select,320,80,TFT_WHITE);
+
 }
 
 //////////////////////
@@ -1316,6 +1333,7 @@ void setup()
 	tft.println("MA-z");
 
 	startupAnimation();
+	drawSelectionMenu();
 }
 
 //////////////////////
@@ -1333,41 +1351,20 @@ void loop()
     if (NewStateCLK != OldStateCLK) {
 		if (digitalRead(DTPin) == NewStateCLK) {counter++;}	
 		else {counter--;}	
-		if (counter < 0) {counter = 0;}
-		if (counter > iconsArray_LEN) {counter = iconsArray_LEN;}}
+		if (counter < 0) {counter = iconsArray_LEN - 1;}
+		if (counter > iconsArray_LEN - 1) {counter = 0;}
+		
+		current_icon = counter;
+
+		previous_icon = current_icon - 1;
+		if (previous_icon < 0) {previous_icon = iconsArray_LEN - 1;}
+		next_icon = current_icon + 1;
+		if (next_icon > iconsArray_LEN - 1) {next_icon = 0;}
+
+		drawSelectionMenu();
+
+	}
+
 
     OldStateCLK = NewStateCLK;
-
-	Serial.println(counter);
-	//////////////////////////////
-	//Drawing the selection menu//
-	//////////////////////////////
-
-	current_icon = counter;
-	
-	// Determine the icons that need to be displayed	// ERROR!!! //
-	previous_icon = current_icon - 1;
-	if (previous_icon < 0) {
-		previous_icon = iconsArray_LEN - 1;
-	}
-
-	next_icon = current_icon + 1;
-	if (next_icon > iconsArray_LEN) {
-		next_icon = 0;
-	}
-
-	//Selection square
-	if (isDrawn == 0) {tft.drawBitmap(0,80,icons_Select,320,80,TFT_WHITE);isDrawn=1;}
-
-	//Previous icon
-	tft.drawBitmap(0,0,iconsArray[previous_icon],320,80,TFT_WHITE, TFT_BLACK);
-
-	//Current icon
-	tft.drawBitmap(0,80,iconsArray[current_icon],320,80,TFT_WHITE, TFT_BLACK);
-
-	//Next icon
-	tft.drawBitmap(0,160,iconsArray[next_icon],320,80,TFT_WHITE, TFT_BLACK);
-
-	delay(100);
-	
 }
