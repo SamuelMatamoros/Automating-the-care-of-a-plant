@@ -39,7 +39,10 @@ void loop() {
         else {
             counter --;
         }
-        
+
+ 		if (counter < 0) {counter = 0;}
+		if (counter > 5) {counter = 5;}
+       
         Serial.print("  Counter:");
         Serial.println(counter);
     }
