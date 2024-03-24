@@ -3,6 +3,7 @@
 #include <TFT_eSPI.h>
 
 TFT_eSPI tft = TFT_eSPI();
+TFT_eSprite img = TFT_eSprite(&tft);
 
 const unsigned char icons_Select [] PROGMEM = {
 	0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 
@@ -1241,11 +1242,8 @@ int pwdFrequency = 1000;
 int dt = 5;
 
 //Screen selection variables
-//Selected
 int current_icon = 0;
-//Previous
 int previous_icon = iconsArray_LEN - 1;
-//Next
 int next_icon = current_icon + 1;
 
 //Rotary encoder inclusion variables
@@ -1257,12 +1255,17 @@ int OldStateCLK;
 int NewStateCLK;
 int counter = 0;
 
-
 //////////////////////////////
 //Startup animation function//
 //////////////////////////////
 
 void startupAnimation(){
+
+	tft.fillScreen(TFT_BLACK);
+	tft.setTextColor(TFT_WHITE);
+	tft.setTextSize(6);
+	tft.setCursor(80, 100);
+	tft.println("MA-z");
 
 	//TFT initiation animation// (turn into a function and call it out in the setup at startup)
 	for (int k = 0; k < 5; k++){
@@ -1286,23 +1289,47 @@ void startupAnimation(){
 
 void drawSelectionMenu() {
 
-	//////////////////////////////
-	//Drawing the selection menu//
-	//////////////////////////////
+//////////////////////////////
+//Drawing the selection menu//
+//////////////////////////////
+
+	img.setColorDepth(8);
+	img.createSprite(320,240);
+	img.fillSprite(TFT_TRANSPARENT);
 
 	//Previous icon
-	tft.drawBitmap(0,0,iconsArray[previous_icon],320,80,TFT_WHITE, TFT_BLACK);
+	img.drawBitmap(0,0,iconsArray[previous_icon],320,80,TFT_WHITE, TFT_BLACK);
 
 	//Current icon
-	tft.drawBitmap(0,80,iconsArray[current_icon],320,80,TFT_WHITE, TFT_BLACK);
+	img.drawBitmap(0,80,iconsArray[current_icon],320,80,TFT_WHITE, TFT_BLACK);
 
 	//Next icon
-	tft.drawBitmap(0,160,iconsArray[next_icon],320,80,TFT_WHITE, TFT_BLACK);
+	img.drawBitmap(0,160,iconsArray[next_icon],320,80,TFT_WHITE, TFT_BLACK);
 
 	//Selection square
-	tft.drawBitmap(0,80,icons_Select,320,80,TFT_WHITE);
+	img.drawBitmap(0,80,icons_Select,320,80,TFT_WHITE);
+	// img.drawRoundRect(0,80,320,80,5,TFT_WHITE);
+
+	img.pushSprite(0,0, TFT_TRANSPARENT);
+	img.deleteSprite();
 
 }
+
+//////////////////////////////
+//Drawing the specified item//
+//////////////////////////////
+
+void drawSelectedItem() {
+
+	img.setColorDepth(8);
+	img.createSprite(320,240);
+	img.fillSprite(TFT_BLACK);
+
+}
+
+
+
+
 
 //////////////////////
 //		Setup		//
@@ -1326,14 +1353,11 @@ void setup()
 	//TFT setup//
 	tft.init();
 	tft.setRotation(3);
-	tft.fillScreen(TFT_BLACK);
-	tft.setTextColor(TFT_WHITE);
-	tft.setTextSize(6);
-	tft.setCursor(80, 100);
-	tft.println("MA-z");
 
-	startupAnimation();
+	// startupAnimation();
+	ledcWrite(pwmChannel,255);
 	drawSelectionMenu();
+
 }
 
 //////////////////////
@@ -1362,9 +1386,12 @@ void loop()
 		if (next_icon > iconsArray_LEN - 1) {next_icon = 0;}
 
 		drawSelectionMenu();
-
 	}
 
+	if (digitalRead(button) != 1) {
+        while (digitalRead(button) == 0) {}
+        delay(10);
+    }
 
-    OldStateCLK = NewStateCLK;
+	OldStateCLK = NewStateCLK;
 }
