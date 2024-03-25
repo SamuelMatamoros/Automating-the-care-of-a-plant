@@ -1353,6 +1353,7 @@ void setup()
 	//TFT setup//
 	tft.init();
 	tft.setRotation(3);
+	tft.fillScreen(TFT_BLACK);
 
 	// startupAnimation();
 	ledcWrite(pwmChannel,255);
