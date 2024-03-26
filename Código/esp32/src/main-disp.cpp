@@ -225,7 +225,10 @@ unsigned long startTime = 0;
 unsigned long pressedTime = 0;
 int pressedThreshold = 300;
 
-
+//ItemPage variables
+//light
+#define lightPin 12
+bool on_off = 0;
 
 //////////////////////////////
 //Startup animation function//
@@ -309,16 +312,63 @@ void drawSelectedItem(int selectedItem) {
 		img.setTextSize(6);
 		img.drawCentreString("12:00:00",160,80,1);
 		img.setTextSize(2);
-		img.drawCentreString("Monday, 1 January 2024", 160, 160, 1);
+		img.drawCentreString("Monday, 1 January 2024", 160, 150, 1);
 	}
 	//face
 	if (selectedItem == 1) {img.drawCentreString("Ups...", 160, 120, 1);}
 	//luz
-	if (selectedItem == 2) {img.drawCentreString("Ups...", 160, 120, 1);}
+	if (selectedItem == 2) {
+		img.drawRoundRect(80,56,160,80,40,TFT_WHITE);
+		if (on_off == 0) {
+			img.fillCircle(84+35,61+35,35,TFT_WHITE);
+			img.setTextSize(5);
+			img.drawCentreString("OFF",160,148+18,1);
+		}
+		if (on_off == 1) {
+			img.fillCircle(166+35,61+35,35,TFT_WHITE);
+			img.setTextSize(5);
+			img.drawCentreString("ON",160,148+18,1);
+		}
+		digitalWrite(lightPin,on_off);
+	}
 	//menu
-	if (selectedItem == 3) {img.drawCentreString("Ups...", 160, 120, 1);}
+	if (selectedItem == 3) {
+
+		//Temperatura (arriba largo)
+		img.drawRoundRect(15,10,290,100,20,TFT_WHITE);
+		img.setTextSize(2);
+		img.drawString("TEMPERATURA",32,28,2);
+		img.drawCircle(48,76,16,TFT_WHITE);
+		img.drawRoundRect(56,69,140,14,7,TFT_WHITE);
+		img.fillCircle(48,76,15,TFT_BLACK);
+		img.fillRoundRect(57,70,138,12,6,TFT_BLACK);
+		//--------Thermometer-----------
+		img.fillCircle(48,76,14,TFT_RED);
+		img.fillRoundRect(58,71,50,10,5,TFT_RED);
+		//--------------------------------
+		img.setTextSize(5);
+		img.drawString("25",218,42);
+		img.setTextSize(3);
+		img.drawString("C",278,42);
+
+		// Humedad relativa (abajo izquierda)
+		img.drawRoundRect(15,120,140,100,20,TFT_WHITE);
+		img.drawRoundRect(165,120,140,100,20,TFT_WHITE);
+		img.setTextSize(2);
+		img.drawCentreString("H.RELATIVA",85,140,1);
+		img.drawCentreString("H. SUELO",235,140,1);
+		img.setTextSize(5);
+		img.drawCentreString("50%",85,170,1);
+		img.drawCentreString("50%",235,170,1);
+
+	}
 	//riego
-	if (selectedItem == 4) {img.drawCentreString("Ups...", 160, 120, 1);}
+	if (selectedItem == 4) {
+		img.drawRoundRect(30,94,260,20,10,TFT_WHITE);
+		img.fillRoundRect(32,96,50,16,8,TFT_SKYBLUE);
+		img.setTextSize(2);
+		img.drawCentreString("Preiona 5s para regar",160,138,1);
+	}
 
 	img.pushSprite(0,0, TFT_TRANSPARENT);
 	img.deleteSprite();
@@ -348,6 +398,9 @@ void setup()
 	//PWM setup//
 	ledcSetup(pwmChannel, pwdFrequency, pwmRes);
 	ledcAttachPin(pwmPin, pwmChannel);
+
+	//Growing light setup//
+	pinMode(lightPin,OUTPUT);
 
 	//TFT setup//
 	tft.init();
@@ -390,7 +443,12 @@ void loop()
 			drawSelectionMenu();
 
 		}
-	}
+		if (current_icon == 2 && itemPage == 1) {
+			if (on_off == 0) {on_off = 1;}
+			else {on_off = 0;}
+			drawSelectedItem(current_icon);
+		}
+	} 
 
 	if (digitalRead(button) != 1) {
 		
