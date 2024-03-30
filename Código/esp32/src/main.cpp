@@ -282,13 +282,18 @@ void imgPrintLocalTime()
 {
   struct tm timeinfo;
   if(!getLocalTime(&timeinfo)){
+	img.setTextSize(1);
+	img.setCursor(0,0);
+	img.print("Failed to obtain time");
     Serial.println("Failed to obtain time");
     return;
   }
-  img.setTextSize(4);
-  img.setCursor(20,100);
-//   img.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
+  img.setTextSize(5);
+  img.setCursor(40,90);
   img.println(&timeinfo, "%H:%M:%S");
+  img.setTextSize(2);
+  img.setCursor(25,140);
+  img.println(&timeinfo, "%A, %B %d %Y");
 }
 
 
@@ -396,7 +401,19 @@ void drawSelectedItem(int selectedItem) {
 	//clock
 	if (selectedItem == 0) {
 		// printLocalTime();
-		imgPrintLocalTime();
+		while (itemPage == 1) {
+			img.createSprite(320,240);
+			img.fillSprite(TFT_BLACK);
+			img.setTextColor(TFT_WHITE);
+			imgPrintLocalTime();
+			img.pushSprite(0,0, TFT_TRANSPARENT);
+			img.deleteSprite();
+			handleNuttonPress();
+			if (itemPage == 1 && pressedTime > pressedThreshold) {
+				itemPage = 0;
+				drawSelectionMenu();
+			}
+		}
 	}
 
 	//face
