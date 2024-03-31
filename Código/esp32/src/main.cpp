@@ -227,7 +227,8 @@ int counter = 0;
 
 unsigned long startTime = 0;
 unsigned long pressedTime = 0;
-int pressedThreshold = 300;
+int lowPressedThreshold = 300;
+int topPressedThreshold = 2000;
 
 //PWM variables
 int pwmPin = 2;
@@ -242,12 +243,17 @@ int dt = 5;
 DHT_Unified dht(DHTPIN, DHTTYPE);
 int dhtDelayMS;
 
+// Riego variables
+int wateringProgressBar = 6;
+
 //wifi variables
-const char* ssid       = "Test1";
-const char* password   = "0012345678";
+// const char* ssid       = "Test1";
+// const char* password   = "0012345678";
+const char* ssid       = "Samuel";
+const char* password   = "potatsio";
 const char* ntpServer = "pool.ntp.org";
 const long  gmtOffset_sec = 3600;
-const int   daylightOffset_sec = 0;
+const int   daylightOffset_sec = 3600;
 int tryCount = 0;
 int tryQuantity = 50;
 
@@ -255,9 +261,21 @@ int tryQuantity = 50;
 //	 ButtonPress	//
 //////////////////////
 
-void handleNuttonPress() {
+void handleButtonPress() {
 	startTime = millis();
 	while (digitalRead(button) == 0) {}
+	while (digitalRead(button) == 0 && current_icon == 4) {
+		// x [0,256]
+		if (wateringProgressBar >= 256) {
+			pressedTime = millis() - startTime;
+			Serial.print("progrestime: ");
+			Serial.println(pressedTime);
+			break;
+		}
+		img.fillRoundRect(32,96,wateringProgressBar,16,8,TFT_SKYBLUE);
+		wateringProgressBar ++;
+		delay(2);
+	}
 	delay(10);
 	pressedTime = millis() - startTime;
 }
@@ -266,18 +284,6 @@ void handleNuttonPress() {
 //		Wi-Fi		//
 //////////////////////
 
-void printLocalTime()
-{
-  struct tm timeinfo;
-  if(!getLocalTime(&timeinfo)){
-    Serial.println("Failed to obtain time");
-    return;
-  }
-  Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
-
-//   Serial.println(&timeinfo, "%H:%M:%S");
-}
-
 void imgPrintLocalTime()
 {
   struct tm timeinfo;
@@ -285,7 +291,6 @@ void imgPrintLocalTime()
 	img.setTextSize(1);
 	img.setCursor(0,0);
 	img.print("Failed to obtain time");
-    Serial.println("Failed to obtain time");
     return;
   }
   img.setTextSize(5);
@@ -325,6 +330,12 @@ float getHumidity() {
 //////////////////////////////
 //Startup animation function//
 //////////////////////////////
+void createImgSprite() {
+	img.setColorDepth(8);
+	img.createSprite(320,240);
+	img.fillSprite(TFT_BLACK);
+	img.setTextColor(TFT_WHITE);
+}
 
 void startupAnimation(){
 
@@ -386,41 +397,58 @@ void drawSelectionMenu() {
 
 }
 
+void printSelectionMenuLogic() {
+	if (itemPage == 1 && pressedTime > lowPressedThreshold && pressedTime < topPressedThreshold) {
+		itemPage = 0;
+		drawSelectionMenu();
+	}
+}
+
 //////////////////////////////
 //Drawing the specified item//
 //////////////////////////////
 
 void drawSelectedItem(int selectedItem) {
 
-	img.setColorDepth(8);
-	img.createSprite(320,240);
-	img.fillSprite(TFT_BLACK);
-	img.setTextColor(TFT_WHITE);
 	img.setTextSize(4);
 
 	//clock
-	if (selectedItem == 0) {
-		// printLocalTime();
-		while (itemPage == 1) {
-			img.createSprite(320,240);
-			img.fillSprite(TFT_BLACK);
-			img.setTextColor(TFT_WHITE);
-			imgPrintLocalTime();
-			img.pushSprite(0,0, TFT_TRANSPARENT);
-			img.deleteSprite();
-			handleNuttonPress();
-			if (itemPage == 1 && pressedTime > pressedThreshold) {
-				itemPage = 0;
-				drawSelectionMenu();
-			}
-		}
+	while (itemPage == 1 && selectedItem == 0) {
+		createImgSprite();
+		imgPrintLocalTime();
+		img.pushSprite(0,0, TFT_TRANSPARENT);
+		img.deleteSprite();
+		handleButtonPress();
+		printSelectionMenuLogic();
 	}
 
 	//face
-	if (selectedItem == 1) {img.drawCentreString("Ups...", 160, 120, 1);}
+	while (selectedItem == 1 && itemPage == 1) {
+		createImgSprite();
+		img.drawCentreString("Ups...", 160, 110, 1);
+		handleButtonPress();
+		printSelectionMenuLogic();
+		img.pushSprite(0,0, TFT_TRANSPARENT);
+		img.deleteSprite();
+	}
+
 	//luz
-	if (selectedItem == 2) {
+	while (selectedItem == 2 && itemPage == 1) {
+		createImgSprite();
 		img.drawRoundRect(80,56,160,80,40,TFT_WHITE);
+		NewStateCLK = digitalRead(CLKPin);
+		if(NewStateCLK != OldStateCLK) {
+			if (current_icon == 2 && itemPage == 1) {
+				if (on_off == 0) {
+					on_off = 1;
+				}
+				else {
+					on_off = 0;
+				}
+			}
+			Serial.println(on_off);
+		}
+		OldStateCLK = NewStateCLK;
 		if (on_off == 0) {
 			img.fillCircle(84+35,61+35,35,TFT_WHITE);
 			img.setTextSize(5);
@@ -432,9 +460,14 @@ void drawSelectedItem(int selectedItem) {
 			img.drawCentreString("ON",160,148+18,1);
 		}
 		digitalWrite(lightPin,on_off);
+		img.pushSprite(0,0, TFT_TRANSPARENT);
+		img.deleteSprite();
+		handleButtonPress();
+		printSelectionMenuLogic();
 	}
 	//menu
-	if (selectedItem == 3) {
+	while (selectedItem == 3 && itemPage == 1) {
+		createImgSprite();
 
 		char temperature = getTemperature();
 
@@ -466,22 +499,33 @@ void drawSelectedItem(int selectedItem) {
 		// img.drawCentreString("50%",85,170,1);
 		img.drawFloat(getHumidity(),0,85,170);
 		img.drawCentreString("50%",235,170,1);
+		handleButtonPress();
+		printSelectionMenuLogic();
+		img.pushSprite(0,0, TFT_TRANSPARENT);
+		img.deleteSprite();
 
 	}
 	//riego
-	if (selectedItem == 4) {
+	while (selectedItem == 4 && itemPage == 1) {
+		createImgSprite();
 		img.drawRoundRect(30,94,260,20,10,TFT_WHITE);
-		img.fillRoundRect(32,96,50,16,8,TFT_SKYBLUE);
 		img.setTextSize(2);
 		img.drawCentreString("Preiona 5s para regar",160,138,1);
+		handleButtonPress();
+		printSelectionMenuLogic();
+		img.pushSprite(0,0, TFT_TRANSPARENT);
+		img.deleteSprite();
 	}
 
-	img.pushSprite(0,0, TFT_TRANSPARENT);
-	img.deleteSprite();
 
 }
 
-
+void printSelectedItemLogic() {
+	if (itemPage == 0 && pressedTime < lowPressedThreshold) {
+		itemPage = 1;
+		drawSelectedItem(current_icon);
+	}
+}
 
 
 //////////////////////
@@ -491,23 +535,6 @@ void drawSelectedItem(int selectedItem) {
 void setup() 
 {
 	Serial.begin(9600);
-
-	// Connect to NTP
-	Serial.printf("Connecting to %s ", ssid);
-	WiFi.begin(ssid, password);
-	while (WiFi.status() != WL_CONNECTED) {
-		delay(500);
-		Serial.print(".");
-	}
-	Serial.println(" CONNECTED");
-
-	//init and get the time
-	configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
-	printLocalTime();
-
-	//disconnect WiFi as it's no longer needed
-	WiFi.disconnect(true);
-	WiFi.mode(WIFI_OFF);
 
     //DHT22 setup
     dht.begin();
@@ -535,6 +562,26 @@ void setup()
 	tft.setRotation(3);
     tft.fillScreen(TFT_BLACK);
 	ledcWrite(pwmChannel,255);
+	
+	// Connect to NTP
+	tft.setTextSize(1);
+	tft.setTextColor(TFT_WHITE);
+	tft.setCursor(0,0);
+	tft.printf("Connecting to %s ", ssid);
+	WiFi.mode(WIFI_STA);
+	WiFi.begin(ssid, password);
+	while (WiFi.status() != WL_CONNECTED) {
+		delay(500);
+		tft.print(".");
+	}
+	//init and get the time
+	tft.println(" CONNECTED");
+	configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
+	imgPrintLocalTime();
+	WiFi.disconnect(true);
+	WiFi.mode(WIFI_OFF);
+	tft.fillScreen(TFT_BLACK);
+
 
 	// startupAnimation();
 	drawSelectionMenu();
@@ -546,10 +593,6 @@ void setup()
 
 void loop() 
 {
-
-	//////////////////////////////
-	//Geting rotary encoder info//
-	//////////////////////////////
 
 	NewStateCLK = digitalRead(CLKPin);
 
@@ -567,33 +610,18 @@ void loop()
 			if (previous_icon < 0) {previous_icon = iconArray_LEN - 1;}
 			next_icon = current_icon + 1;
 			if (next_icon > iconArray_LEN - 1) {next_icon = 0;}
-
 			drawSelectionMenu();
 
-		}
-		if (current_icon == 2 && itemPage == 1) {
-			if (on_off == 0) {on_off = 1;}
-			else {on_off = 0;}
-			drawSelectedItem(current_icon);
-		}
+			}
+
 	} 
 
+	OldStateCLK = NewStateCLK;
+
 	if (digitalRead(button) != 1) {
-		
-		//Determine how long the button has been pressed
-
-		handleNuttonPress();
-
-		if (itemPage == 0 && pressedTime < pressedThreshold) {
-			itemPage = 1;
-			drawSelectedItem(current_icon);
-		}
-		if (itemPage == 1 && pressedTime > pressedThreshold) {
-			itemPage = 0;
-			drawSelectionMenu();
-		}
-		
+		handleButtonPress();
+		printSelectionMenuLogic();
+		printSelectedItemLogic();
     }
 
-	OldStateCLK = NewStateCLK;
 }

@@ -1,6 +1,8 @@
 #include <WiFi.h>
 #include "time.h"
 
+#define ledPin 2
+
 const char* ssid       = "Test1";
 const char* password   = "0012345678";
 
@@ -12,30 +14,38 @@ void printLocalTime()
 {
   struct tm timeinfo;
   if(!getLocalTime(&timeinfo)){
-    Serial.println("Failed to obtain time");
+    // Serial.println("Failed to obtain time");
     return;
   }
-  Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
+  // Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
 
 //   Serial.println(&timeinfo, "%H:%M:%S");
 }
 
 void setup()
 {
-  Serial.begin(9600);
+  // Serial.begin(9600);
+
+  pinMode(ledPin,OUTPUT);
   
   //connect to WiFi
-  Serial.printf("Connecting to %s ", ssid);
+  // Serial.printf("Connecting to %s ", ssid);
+  WiFi.mode(WIFI_STA);
+  WiFi.enableSTA(true);
   WiFi.begin(ssid, password);
   while (WiFi.status() != WL_CONNECTED) {
+      digitalWrite(ledPin,HIGH);
       delay(500);
-      Serial.print(".");
+      digitalWrite(ledPin,LOW);
+      delay(500);
+      // Serial.print(".");
   }
-  Serial.println(" CONNECTED");
+  // Serial.println(" CONNECTED");
+  digitalWrite(ledPin,HIGH);
   
   //init and get the time
-  configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
-  printLocalTime();
+  // configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
+  // printLocalTime();
 
   //disconnect WiFi as it's no longer needed
   WiFi.disconnect(true);
@@ -45,5 +55,5 @@ void setup()
 void loop()
 {
   delay(1000);
-  printLocalTime();
+  // printLocalTime();
 }
