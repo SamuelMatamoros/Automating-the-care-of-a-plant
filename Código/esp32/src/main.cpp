@@ -244,13 +244,17 @@ DHT_Unified dht(DHTPIN, DHTTYPE);
 int dhtDelayMS;
 
 // Riego variables
+int wateringTimeStart = 0;
+int wateringTimePressed = 0;
 int wateringProgressBar = 6;
 
 //wifi variables
-// const char* ssid       = "Test1";
-// const char* password   = "0012345678";
-const char* ssid       = "Samuel";
-const char* password   = "potatsio";
+const char* ssid       = "Test1";
+const char* password   = "0012345678";
+// const char* ssid       = "Samuel";
+// const char* password   = "potatsio";
+// const char* ssid       = "Vremedio";
+// const char* password   = "VRsHtS9cL2018";
 const char* ntpServer = "pool.ntp.org";
 const long  gmtOffset_sec = 3600;
 const int   daylightOffset_sec = 3600;
@@ -264,18 +268,6 @@ int tryQuantity = 50;
 void handleButtonPress() {
 	startTime = millis();
 	while (digitalRead(button) == 0) {}
-	while (digitalRead(button) == 0 && current_icon == 4) {
-		// x [0,256]
-		if (wateringProgressBar >= 256) {
-			pressedTime = millis() - startTime;
-			Serial.print("progrestime: ");
-			Serial.println(pressedTime);
-			break;
-		}
-		img.fillRoundRect(32,96,wateringProgressBar,16,8,TFT_SKYBLUE);
-		wateringProgressBar ++;
-		delay(2);
-	}
 	delay(10);
 	pressedTime = millis() - startTime;
 }
@@ -342,7 +334,7 @@ void startupAnimation(){
 	tft.fillScreen(TFT_BLACK);
 	tft.setTextColor(TFT_WHITE);
 	tft.setTextSize(6);
-	tft.drawCentreString("MA-z",160,120,1);
+	tft.drawCentreString("MA-z",160,100,1);
 
 	//TFT initiation animation// (turn into a function and call it out in the setup at startup)
 	for (int k = 0; k < 5; k++){
@@ -511,7 +503,37 @@ void drawSelectedItem(int selectedItem) {
 		img.drawRoundRect(30,94,260,20,10,TFT_WHITE);
 		img.setTextSize(2);
 		img.drawCentreString("Preiona 5s para regar",160,138,1);
-		handleButtonPress();
+		startTime = millis();
+		wateringTimeStart = millis();
+		while (digitalRead(button) == 0) {
+			// x [0,256]
+			createImgSprite();
+			img.drawRoundRect(30,94,260,20,10,TFT_WHITE);
+			img.setTextSize(2);
+			img.drawCentreString("Preiona 5s para regar",160,138,1);
+
+			wateringTimePressed = millis() - wateringTimeStart;
+			Serial.print("progrestime: ");
+			Serial.println(wateringTimePressed);
+			img.fillRoundRect(32,96,wateringProgressBar,16,8,TFT_SKYBLUE);
+			wateringProgressBar ++;
+			if (wateringProgressBar >= 256) {
+
+				digitalWrite(lightPin,HIGH);
+				delay(1000);
+				digitalWrite(lightPin,LOW);	
+				
+				break;
+			}
+			// delay(2);
+			//mapping function
+
+			img.pushSprite(0,0, TFT_TRANSPARENT);
+			img.deleteSprite();
+		}
+		wateringTimePressed = 0;
+		wateringProgressBar = 0;
+		pressedTime = millis() - startTime;
 		printSelectionMenuLogic();
 		img.pushSprite(0,0, TFT_TRANSPARENT);
 		img.deleteSprite();
@@ -576,6 +598,8 @@ void setup()
 	}
 	//init and get the time
 	tft.println(" CONNECTED");
+	tft.println("Conecting to NTP server");
+	tft.println("Configuring time");
 	configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
 	imgPrintLocalTime();
 	WiFi.disconnect(true);
@@ -583,7 +607,7 @@ void setup()
 	tft.fillScreen(TFT_BLACK);
 
 
-	// startupAnimation();
+	startupAnimation();
 	drawSelectionMenu();
 }
 
