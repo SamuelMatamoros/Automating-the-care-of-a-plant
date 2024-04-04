@@ -243,10 +243,17 @@ int dt = 5;
 DHT_Unified dht(DHTPIN, DHTTYPE);
 int dhtDelayMS;
 
+//SoilMoisture variables
+#define SenPin 34
+int value;
+int highest = 0;
+int lowest = 1000;
+
 // Riego variables
 int wateringTimeStart = 0;
 int wateringTimePressed = 0;
 int wateringProgressBar = 6;
+int conversionVal;
 
 //wifi variables
 const char* ssid       = "Test1";
@@ -271,6 +278,16 @@ void handleButtonPress() {
 	delay(10);
 	pressedTime = millis() - startTime;
 }
+
+///////////////////////
+// WatertingProgress //
+///////////////////////
+
+int MillisToProgress(int millisProgressTime) {
+	conversionVal = 256*millisProgressTime/5000;
+	return conversionVal;
+}
+
 
 //////////////////////
 //		Wi-Fi		//
@@ -308,6 +325,11 @@ float getTemperature() {
     }
 }
 
+int temperatureToProgress(int temperature) {
+	int progress = 138*temperature/50;
+	return progress;
+}
+
 float getHumidity() {
 	sensors_event_t event;
 	dht.humidity().getEvent(&event);
@@ -317,6 +339,25 @@ float getHumidity() {
     else {
 		return int(event.relative_humidity);
     }
+}
+//////////////////////
+//	SoilMoisture	//
+//////////////////////
+
+float getSoilMoisture() {
+    value = analogRead(SenPin);
+    if (value > 1000) {
+        if (value > highest) {
+            highest = value;
+        }
+    }
+    else {
+        if (value < lowest) {
+            lowest = value;
+        }
+    }
+    int mapped = map(value, lowest, highest, 100, 0);
+	return mapped;
 }
 
 //////////////////////////////
@@ -471,15 +512,15 @@ void drawSelectedItem(int selectedItem) {
 		img.drawRoundRect(56,69,140,14,7,TFT_WHITE);
 		img.fillCircle(48,76,15,TFT_BLACK);
 		img.fillRoundRect(57,70,138,12,6,TFT_BLACK);
-		//--------Thermometer-----------
-		img.fillCircle(48,76,14,TFT_RED);
-		img.fillRoundRect(58,71,50,10,5,TFT_RED);
-		//--------------------------------
 		img.setTextSize(5);
 		// img.drawString("25",218,42);
-		img.drawFloat(getTemperature(),0,218,42);
+		img.drawFloat(getTemperature(),0,222,42);
 		img.setTextSize(3);
 		img.drawString("C",278,42);
+		//--------Thermometer-----------
+		img.fillCircle(48,76,14,TFT_RED);
+		img.fillRoundRect(58,71,temperatureToProgress(getTemperature()),10,5,TFT_RED);
+		//--------------------------------
 
 		// Humedad relativa (abajo izquierda)
 		img.drawRoundRect(15,120,140,100,20,TFT_WHITE);
@@ -488,13 +529,15 @@ void drawSelectedItem(int selectedItem) {
 		img.drawCentreString("H.RELATIVA",85,140,1);
 		img.drawCentreString("H. SUELO",235,140,1);
 		img.setTextSize(5);
-		// img.drawCentreString("50%",85,170,1);
-		img.drawFloat(getHumidity(),0,85,170);
-		img.drawCentreString("50%",235,170,1);
+		img.drawFloat(getHumidity(),0,60,170);
+		img.drawCentreString("%",120,170,1);
+		img.drawFloat(getSoilMoisture(),0,194,170);
+		img.drawString("%",254,170,1);
 		handleButtonPress();
 		printSelectionMenuLogic();
 		img.pushSprite(0,0, TFT_TRANSPARENT);
 		img.deleteSprite();
+		delay(500);
 
 	}
 	//riego
@@ -513,25 +556,21 @@ void drawSelectedItem(int selectedItem) {
 			img.drawCentreString("Preiona 5s para regar",160,138,1);
 
 			wateringTimePressed = millis() - wateringTimeStart;
-			Serial.print("progrestime: ");
-			Serial.println(wateringTimePressed);
+			wateringProgressBar = MillisToProgress(wateringTimePressed);
+			// Serial.print("progrestime: ");
+			// Serial.println(wateringTimePressed);
+			wateringProgressBar = MillisToProgress(wateringTimePressed);
 			img.fillRoundRect(32,96,wateringProgressBar,16,8,TFT_SKYBLUE);
-			wateringProgressBar ++;
 			if (wateringProgressBar >= 256) {
-
 				digitalWrite(lightPin,HIGH);
 				delay(1000);
 				digitalWrite(lightPin,LOW);	
-				
+				delay(1000);
 				break;
 			}
-			// delay(2);
-			//mapping function
-
 			img.pushSprite(0,0, TFT_TRANSPARENT);
 			img.deleteSprite();
 		}
-		wateringTimePressed = 0;
 		wateringProgressBar = 0;
 		pressedTime = millis() - startTime;
 		printSelectionMenuLogic();
@@ -564,6 +603,9 @@ void setup()
     dht.temperature().getSensor(&sensor);
     dht.humidity().getSensor(&sensor);
     dhtDelayMS = 2000;
+
+	//SoilMoisture setup
+    pinMode(SenPin, INPUT);
 
 	//knob setup//
 	pinMode(DTPin, INPUT);
@@ -607,7 +649,7 @@ void setup()
 	tft.fillScreen(TFT_BLACK);
 
 
-	startupAnimation();
+	// startupAnimation();
 	drawSelectionMenu();
 }
 

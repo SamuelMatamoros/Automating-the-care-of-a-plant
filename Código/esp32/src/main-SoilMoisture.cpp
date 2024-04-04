@@ -6,7 +6,6 @@ int value;
 int valueCrude;
 int highest = 0;
 int lowest = 1000;
-int SenvAL;
 
 void setup() {
 
@@ -22,9 +21,9 @@ void loop() {
     // Lowest aprox. 0
     // Highest aprox. 2700
 
-    valueCrude = analogRead(SenPin);
+    value = analogRead(SenPin);
     Serial.print("Value: ");
-    Serial.print(valueCrude);
+    Serial.print(value);
 
     if (value > 1000) {
         if (value > highest) {
