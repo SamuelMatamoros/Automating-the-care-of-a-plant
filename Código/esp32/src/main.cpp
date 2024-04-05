@@ -194,6 +194,7 @@ const unsigned char* iconArray[5] = {
 	icon__Riego
 };
 
+
 char iconNameArray[iconArray_LEN] [20]= {
 	{"CLOCK"},
 	{"FACE"},
@@ -256,10 +257,10 @@ int wateringProgressBar = 6;
 int conversionVal;
 
 //wifi variables
-const char* ssid       = "Test1";
-const char* password   = "0012345678";
-// const char* ssid       = "Samuel";
-// const char* password   = "potatsio";
+// const char* ssid       = "Test1";
+// const char* password   = "0012345678";
+const char* ssid       = "Samuel";
+const char* password   = "potatsio";
 // const char* ssid       = "Vremedio";
 // const char* password   = "VRsHtS9cL2018";
 const char* ntpServer = "pool.ntp.org";
@@ -378,7 +379,7 @@ void startupAnimation(){
 	tft.drawCentreString("MA-z",160,100,1);
 
 	//TFT initiation animation// (turn into a function and call it out in the setup at startup)
-	for (int k = 0; k < 5; k++){
+	for (int k = 0; k < 3; k++){
 
 	for (int i = 0; i < 255; i++){
 		ledcWrite(pwmChannel, i);
@@ -514,7 +515,7 @@ void drawSelectedItem(int selectedItem) {
 		img.fillRoundRect(57,70,138,12,6,TFT_BLACK);
 		img.setTextSize(5);
 		// img.drawString("25",218,42);
-		img.drawFloat(getTemperature(),0,222,42);
+		img.drawFloat(getTemperature(),0,220,42);
 		img.setTextSize(3);
 		img.drawString("C",278,42);
 		//--------Thermometer-----------
@@ -529,7 +530,7 @@ void drawSelectedItem(int selectedItem) {
 		img.drawCentreString("H.RELATIVA",85,140,1);
 		img.drawCentreString("H. SUELO",235,140,1);
 		img.setTextSize(5);
-		img.drawFloat(getHumidity(),0,60,170);
+		img.drawFloat(getHumidity(),0,40,170);
 		img.drawCentreString("%",120,170,1);
 		img.drawFloat(getSoilMoisture(),0,194,170);
 		img.drawString("%",254,170,1);
@@ -643,13 +644,14 @@ void setup()
 	tft.println("Conecting to NTP server");
 	tft.println("Configuring time");
 	configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
+	tft.println("Time configured!");
 	imgPrintLocalTime();
 	WiFi.disconnect(true);
 	WiFi.mode(WIFI_OFF);
 	tft.fillScreen(TFT_BLACK);
 
 
-	// startupAnimation();
+	startupAnimation();
 	drawSelectionMenu();
 }
 
