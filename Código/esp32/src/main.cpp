@@ -197,10 +197,10 @@ const unsigned char* iconArray[5] = {
 
 char iconNameArray[iconArray_LEN] [20]= {
 	{"CLOCK"},
-	{"FACE"},
+	{"LIGHT"},
 	{"LUZ"},
 	{"MENU"},
-	{"RIEGO"}
+	{"WATERING"}
 };
 
 //Screen selection variables
@@ -347,16 +347,8 @@ float getHumidity() {
 
 float getSoilMoisture() {
     value = analogRead(SenPin);
-    if (value > 1000) {
-        if (value > highest) {
-            highest = value;
-        }
-    }
-    else {
-        if (value < lowest) {
-            lowest = value;
-        }
-    }
+    if (value > 1000) { if (value > highest) { highest = value; } }
+    else { if (value < lowest) { lowest = value; } }
     int mapped = map(value, lowest, highest, 100, 0);
 	return mapped;
 }
