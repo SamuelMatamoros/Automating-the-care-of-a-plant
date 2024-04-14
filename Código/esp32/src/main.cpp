@@ -197,8 +197,8 @@ const unsigned char* iconArray[5] = {
 
 char iconNameArray[iconArray_LEN] [20]= {
 	{"CLOCK"},
+	{"FACE"},
 	{"LIGHT"},
-	{"LUZ"},
 	{"MENU"},
 	{"WATERING"}
 };
@@ -216,6 +216,9 @@ bool itemPage = 0;
 //ItemPage variables
 #define lightPin 12
 bool on_off = 0;
+
+//Watering
+#define wateringPin 14
 
 //Rotary encoder inclusion variables
 #define DTPin 21
@@ -257,10 +260,10 @@ int wateringProgressBar = 6;
 int conversionVal;
 
 //wifi variables
-// const char* ssid       = "Test1";
-// const char* password   = "0012345678";
-const char* ssid       = "Samuel";
-const char* password   = "potatsio";
+const char* ssid       = "Test1";
+const char* password   = "0012345678";
+// const char* ssid       = "Samuel";
+// const char* password   = "potatsio";
 // const char* ssid       = "Vremedio";
 // const char* password   = "VRsHtS9cL2018";
 const char* ntpServer = "pool.ntp.org";
@@ -555,10 +558,11 @@ void drawSelectedItem(int selectedItem) {
 			wateringProgressBar = MillisToProgress(wateringTimePressed);
 			img.fillRoundRect(32,96,wateringProgressBar,16,8,TFT_SKYBLUE);
 			if (wateringProgressBar >= 256) {
+				digitalWrite(wateringPin,HIGH);
 				digitalWrite(lightPin,HIGH);
 				delay(1000);
+				digitalWrite(wateringPin,LOW);	
 				digitalWrite(lightPin,LOW);	
-				delay(1000);
 				break;
 			}
 			img.pushSprite(0,0, TFT_TRANSPARENT);
@@ -613,6 +617,8 @@ void setup()
 
 	//Growing light setup//
 	pinMode(lightPin,OUTPUT);
+	//Waterring pump setup//
+	pinMode(wateringPin,OUTPUT);
 
 	//TFT setup//
 	tft.init();
@@ -659,8 +665,8 @@ void loop()
     if (NewStateCLK != OldStateCLK) {
 		if (itemPage == 0) {
 
-			if (digitalRead(DTPin) == NewStateCLK) {counter++;}	
-			else {counter--;}	
+			if (digitalRead(DTPin) == NewStateCLK) {counter--;}	
+			else {counter++;}	
 			if (counter < 0) {counter = iconArray_LEN - 1;}
 			if (counter > iconArray_LEN - 1) {counter = 0;}
 			
